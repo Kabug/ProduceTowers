@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class CameraRotate : MonoBehaviour
 {
-    public Vector3 center = new Vector3(10.5f, 0, 10.5f);
+    public Vector3 center = new Vector3(9.5f, 0, 9.5f);
     public float speed = 1f;
     private Vector3 cameraOffset;
     [Range(0.01f, 1.0f)]
@@ -12,8 +12,12 @@ public class CameraRotate : MonoBehaviour
 
     private GameObject lastHitObject;
 
+    private bool lastRotateLeft = true;
+    private bool stopRotate = false;
+
     Ray ray;
     RaycastHit hit;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -24,8 +28,16 @@ public class CameraRotate : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //transform.Translate(Vector3.right * Time.deltaTime * speed * speed);
-        //transform.LookAt(center);
+        if (lastRotateLeft && !stopRotate)
+        {
+            transform.LookAt(center);
+            transform.Translate(Vector3.right * Time.deltaTime * speed * 2f);
+        }
+        else if (!lastRotateLeft && !stopRotate)
+        {
+            transform.LookAt(center);
+            transform.Translate(Vector3.left * Time.deltaTime * speed * 2f);
+        }
         if (Input.GetMouseButton(1))
         {
             Quaternion camTurnAngle = Quaternion.AngleAxis(Input.GetAxis("Mouse X") * speed, Vector3.up);
@@ -36,15 +48,19 @@ public class CameraRotate : MonoBehaviour
 
             transform.position = Vector3.Slerp(transform.position, newPos, SmoothFactor);
             transform.LookAt(center);
-            //    Debug.Log(Input.GetAxis("Mouse X"))
-            //    if (Input.GetAxis("Mouse X") < 0)
-            //    {
-            //        transform.Translate(Vector3.right * Mathf.Abs(Input.GetAxis("Mouse X")));
-            //    }
-            //    else if (Input.GetAxis("Mouse X") > 0)
-            //    {
-            //        transform.Translate(Vector3.left * Input.GetAxis("Mouse X"));
-            //    }
+            if (Input.GetAxis("Mouse X") > 0)
+            {
+                lastRotateLeft = false;
+            }
+            else if (Input.GetAxis("Mouse X") < 0)
+            {
+                lastRotateLeft = true;
+            }
+        }
+
+        if (Input.GetKeyDown("space"))
+        {
+            stopRotate = !stopRotate;
         }
 
         ray = Camera.main.ScreenPointToRay(Input.mousePosition);
