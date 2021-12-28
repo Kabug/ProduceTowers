@@ -27,9 +27,9 @@ public class GridGenerator : MonoBehaviour
     {
         //Instantiate(blockPrefab, new Vector3(1, 1, 1), Quaternion.identity);
         seed = UnityEngine.Random.Range(0f, 0.2f);
-        for (int z = 0; z <= zSize; z++)
+        for (int z = 0; z < zSize; z++)
         {
-            for (int x = 0; x <= xSize; x++)
+            for (int x = 0; x < xSize; x++)
             {
                 float y = (float)Math.Round(Mathf.PerlinNoise(x * (0.25f + seed), z * (0.25f + seed)) * 2.5f, MidpointRounding.AwayFromZero) / 2;
                 //Debug.Log(new Vector3(x, y, z));
@@ -51,7 +51,6 @@ public class GridGenerator : MonoBehaviour
             }
             yield return new WaitForSeconds(0.0001f);
         }
-
         //yield return new WaitForSeconds(0.0001f);
     }
 
