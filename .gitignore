@@ -37,4 +37,5 @@ sysinfo.txt
 *.unitypackage
 
 # Screw the Logs
+Logs/
 *.log
