@@ -1761,7 +1761,7 @@
     },
     "m_Name": "DiffuseTexture",
     "m_DefaultReferenceName": "",
-    "m_OverrideReferenceName": "Texture2D_f8ba48876c16428c987dd874b8d9ad4e",
+    "m_OverrideReferenceName": "DiffuseTexture",
     "m_GeneratePropertyBlock": true,
     "m_Precision": 0,
     "overrideHLSLDeclaration": true,
