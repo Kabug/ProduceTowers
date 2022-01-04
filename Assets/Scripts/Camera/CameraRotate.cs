@@ -18,9 +18,18 @@ public class CameraRotate : MonoBehaviour
     Ray ray;
     RaycastHit hit;
 
+    //GridGenerator grid;
+
+    //void Awake()
+    //{
+    //    grid = getcomponent<gridgenerator>();
+    //    center = new vector3((grid.xsize - 1) / 2, 0, (grid.zsize - 1) / 2);
+    //}
+
     // Start is called before the first frame update
     void Start()
     {
+
         transform.LookAt(center);
         cameraOffset = transform.position - center;
     }
@@ -28,20 +37,31 @@ public class CameraRotate : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (lastRotateLeft && !stopRotate)
+        // Need to turn this into like how the other rotate works
+        if (lastRotateLeft && !stopRotate && !Input.GetMouseButton(1))
         {
+            Quaternion camTurnAngle = Quaternion.AngleAxis(-0.05f * speed, Vector3.up);
+            cameraOffset = camTurnAngle * cameraOffset;
+
+            Vector3 newPos = center + cameraOffset;
+
+            transform.position = Vector3.Slerp(transform.position, newPos, SmoothFactor);
             transform.LookAt(center);
-            transform.Translate(Vector3.right * Time.deltaTime * speed * 2f);
         }
         else if (!lastRotateLeft && !stopRotate)
         {
+            Quaternion camTurnAngle = Quaternion.AngleAxis(0.05f * speed, Vector3.up);
+            cameraOffset = camTurnAngle * cameraOffset;
+
+            Vector3 newPos = center + cameraOffset;
+
+            transform.position = Vector3.Slerp(transform.position, newPos, SmoothFactor);
             transform.LookAt(center);
-            transform.Translate(Vector3.left * Time.deltaTime * speed * 2f);
         }
+
         if (Input.GetMouseButton(1))
         {
             Quaternion camTurnAngle = Quaternion.AngleAxis(Input.GetAxis("Mouse X") * speed, Vector3.up);
-
             cameraOffset = camTurnAngle * cameraOffset;
 
             Vector3 newPos = center + cameraOffset;
@@ -71,7 +91,7 @@ public class CameraRotate : MonoBehaviour
             if (lastHitObject && lastHitObject != hit.transform.gameObject)
             {
                 lastHitObject.GetComponent<Renderer>().material.SetColor("OutlineColor", Color.black);
-                lastHitObject.transform.position = lastHitObject.transform.position - new Vector3(0, 0.25f, 0); ;
+                lastHitObject.transform.position = lastHitObject.transform.position - new Vector3(0, 0.25f, 0);
 
             }
             if (lastHitObject != hit.transform.gameObject)

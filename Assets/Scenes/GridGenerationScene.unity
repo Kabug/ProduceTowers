@@ -133,6 +133,7 @@ GameObject:
   m_Component:
   - component: {fileID: 223701693}
   - component: {fileID: 223701692}
+  - component: {fileID: 223701694}
   m_Layer: 0
   m_Name: Grid Generator
   m_TagString: Untagged
@@ -155,8 +156,24 @@ MonoBehaviour:
   blockPrefab: {fileID: 7929542369543168120, guid: 4386e8d5233371c4ca8f2cdc7f6f7977, type: 3}
   waterPrefab: {fileID: 8736564887131478348, guid: ff316b101cdf14e4fad6e104dcd57c2e, type: 3}
   rockPrefab: {fileID: 8736564887131478348, guid: 9706c9ea94dc7e440be4eb72fa75537c, type: 3}
+  pathTexture: {fileID: 2800000, guid: 8268af2b01baed04c83e811f64db5c19, type: 3}
+  bridgeTexture: {fileID: 2800000, guid: c461008aff8aefc40b17da528751b5a1, type: 3}
+  rockRoadTexture: {fileID: 2800000, guid: 2a113f09f4d801844a055afdf11f28f3, type: 3}
+  startTexture: {fileID: 2800000, guid: 3ca2711d9e7656045b680b22a949c310, type: 3}
+  endTexture: {fileID: 2800000, guid: 885582fccb309504ca6be5f794c01838, type: 3}
   xSize: 20
   zSize: 20
+  C: 1000
+  scale: 0.25
+  calculatePath: 1
+  gridGenerating: 1
+  pathGenerating: 0
+  deleting: 0
+  groundCost: 0
+  rockCost: 5
+  waterCost: 10
+  startCoords: {x: 0, y: 0}
+  endCoords: {x: 0, y: 0}
 --- !u!4 &223701693
 Transform:
   m_ObjectHideFlags: 0
@@ -171,6 +188,20 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &223701694
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 223701691}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 53d451a7d4b85834aa1c8b527987c60e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  start: {fileID: 0}
+  end: {fileID: 0}
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
