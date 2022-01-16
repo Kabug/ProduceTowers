@@ -52,6 +52,7 @@ public class GridGenerator : MonoBehaviour
         //Instantiate(blockPrefab, new Vector3(1, 1, 1), Quaternion.identity);
         //seed = UnityEngine.Random.Range(0f, 0.2f);
         seed = UnityEngine.Random.Range(0f, 1f);
+        List<Vector2Int> possibleStartPos = new List<Vector2Int>();
         for (int z = 0; z < zSize; z++)
         {
             //mapObjectList.Add(new List<GameObject>());
@@ -97,19 +98,46 @@ public class GridGenerator : MonoBehaviour
                     waterObject.transform.parent = GameObject.Find("Grid Generator").transform;
                     grid[z, x] = new PathNode(new Vector3(x, y, z), x, z, waterCost + middlecost, waterObject);
                 }
+                if ( x == 0 || z == 0 || x == xSize - 1 || z == zSize - 1)
+                {
+                    possibleStartPos.Add(new Vector2Int(x,z));
+                }
             }
             if (z % 2 == 0)
             {
                 yield return new WaitForSeconds(0.0001f);
             }
         }
-        startCoords = new Vector2Int(0,0);
-        endCoords = new Vector2Int(zSize - 1, xSize - 1);
+
+        int randomIndex = UnityEngine.Random.Range(0, possibleStartPos.Count - 1);
+        startCoords = possibleStartPos[randomIndex];
+
+        float endDistance = (xSize + zSize) * 0.6f;
+        List<Vector2Int> possibleEndPos = new List<Vector2Int>();
+
+        for (int i = 0; i < possibleStartPos.Count; i++)
+        {
+            if (GetManhattenDistance(startCoords, possibleStartPos[i]) >= endDistance)
+            {
+                possibleEndPos.Add(possibleStartPos[i]);
+            }
+        }
+
+        randomIndex = UnityEngine.Random.Range(0, possibleEndPos.Count - 1);
+        endCoords = possibleEndPos[randomIndex];
 
         grid[startCoords.x, startCoords.y].obj.tag = "Start";
         grid[endCoords.x, endCoords.y].obj.tag = "End";
         gridGenerating = false;
         //yield return new WaitForSeconds(0.0001f);
+    }
+
+    int GetManhattenDistance(Vector2Int StartPos, Vector2Int EndPos)
+    {
+        int ix = Mathf.Abs(StartPos.x - EndPos.x);
+        int iz = Mathf.Abs(StartPos.y - EndPos.y);
+
+        return ix + iz;
     }
 
     public List<PathNode> GetNeighboringNodes(PathNode CurrentNode)
@@ -192,23 +220,13 @@ public class GridGenerator : MonoBehaviour
             {
                 grid[node.gridz, node.gridx].obj.GetComponent<Renderer>().material.SetTexture("DiffuseTexture", pathTexture);
                 grid[node.gridz, node.gridx].obj.transform.position = grid[node.gridz, node.gridx].obj.transform.position - new Vector3(0, 0.25f, 0);
+                // In case outline colour needs to be changed
                 //grid[node.gridz, node.gridx].obj.GetComponent<Renderer>().material.SetColor("OutlineColor", new Color(242f / 255f, 166f / 255f, 94f / 255f, 1));
             }
             yield return new WaitForSeconds(0.0001f);
         }
         pathGenerating = false;
     }
-
-    //public void HighlightSpot(PathNode node)
-    //{
-    //    mapObjectList[node.gridz][node.gridx].transform.position = mapObjectList[node.gridz][node.gridx].transform.position + new Vector3(0, 1f, 0);
-    //    //Destroy(mapObjectList[node.gridz][node.gridx]);
-    //}
-
-    //public void UnhighlightSpot(PathNode node)
-    //{
-    //    mapObjectList[node.gridz][node.gridz].transform.position = mapObjectList[node.gridz][node.gridz].transform.position - new Vector3(0, 0.25f, 0);
-    //}
 
     public void DeleteGrid()
     {
