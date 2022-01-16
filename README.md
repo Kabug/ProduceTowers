@@ -7,7 +7,7 @@
 Toon Shaders
 ![6oHH4JD](https://user-images.githubusercontent.com/22303067/147572390-a8d26c1f-0157-4e96-b91f-5b8c464e009d.gif)
 
-A* Path Generation with weights (Not implemented correcly tho haha)
+A* Path Generation with weights (Not implemented correctly tho haha)
 ![xpMnrHN](https://user-images.githubusercontent.com/22303067/147714083-30ca8989-6249-441f-8d49-9537b70aaa46.gif)
 
 Fixed A* Path Generation with weights
