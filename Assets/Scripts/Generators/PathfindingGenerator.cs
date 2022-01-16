@@ -6,8 +6,8 @@ public class PathfindingGenerator : MonoBehaviour
 {
 
     GridGenerator grid;
-    public Transform start;
-    public Transform end;
+    public PathNode startNode;
+    public PathNode endNode;
     
     void Awake()
     {
@@ -18,22 +18,19 @@ public class PathfindingGenerator : MonoBehaviour
     {
         if (GameObject.FindGameObjectWithTag("Start") && GameObject.FindGameObjectWithTag("End") && grid.calculatePath && !grid.gridGenerating && !grid.pathGenerating)
         {
-            start = GameObject.FindGameObjectWithTag("Start").transform;
-            end = GameObject.FindGameObjectWithTag("End").transform;
-            FindPath(start.position, end.position);
+            startNode = grid.grid[grid.startCoords.x, grid.startCoords.y];
+            endNode = grid.grid[grid.endCoords.x, grid.endCoords.y];
+            FindPath();
             grid.calculatePath = false;
         }
     }
 
-    void FindPath(Vector3 startPos, Vector3 endPos)
+    void FindPath()
     {
-        PathNode StartNode = grid.grid[0, 0];
-        PathNode EndNode = grid.grid[grid.zSize - 1, grid.xSize - 1];
-
         List<PathNode> OpenList = new List<PathNode>();
         HashSet<PathNode> ClosedList = new HashSet<PathNode>();
 
-        OpenList.Add(StartNode);
+        OpenList.Add(startNode);
 
         while (OpenList.Count > 0)
         {
@@ -49,9 +46,9 @@ public class PathfindingGenerator : MonoBehaviour
             OpenList.Remove(CurrentNode);
             ClosedList.Add(CurrentNode);
 
-            if (CurrentNode == EndNode)
+            if (CurrentNode == endNode)
             {
-                GetFinalPath(StartNode, EndNode);
+                GetFinalPath(startNode, endNode);
             }
 
             foreach (PathNode NeighborNode in grid.GetNeighboringNodes(CurrentNode))
@@ -66,7 +63,7 @@ public class PathfindingGenerator : MonoBehaviour
                 if (MoveCost < NeighborNode.gCost || !OpenList.Contains(NeighborNode))
                 {
                     NeighborNode.gCost = MoveCost;
-                    NeighborNode.hCost = GetManhattenDistance(NeighborNode, EndNode);
+                    NeighborNode.hCost = GetManhattenDistance(NeighborNode, endNode);
                     NeighborNode.parent = CurrentNode;
 
                     if (!OpenList.Contains(NeighborNode))
