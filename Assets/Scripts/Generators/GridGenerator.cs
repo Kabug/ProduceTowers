@@ -8,6 +8,7 @@ public class GridGenerator : MonoBehaviour
     public GameObject blockPrefab;
     public GameObject waterPrefab;
     public GameObject rockPrefab;
+    public GameObject treePrefab;
 
     public Texture pathTexture;
     public Texture bridgeTexture;
@@ -260,7 +261,6 @@ public class GridGenerator : MonoBehaviour
             DeleteGrid();
             StartCoroutine(CreateGrid());
         }
-
     }
 
     // Update is called once per frame
