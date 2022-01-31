@@ -5,16 +5,12 @@ using UnityEngine;
 
 public class GridGenerator : MonoBehaviour
 {
+    PathfindingGenerator pathGen;
+
     public GameObject blockPrefab;
     public GameObject waterPrefab;
     public GameObject rockPrefab;
     public GameObject treePrefab;
-
-    public Texture pathTexture;
-    public Texture bridgeTexture;
-    public Texture rockRoadTexture;
-    public Texture startTexture;
-    public Texture endTexture;
 
     public int xSize = 20;
     public int zSize = 20;
@@ -26,10 +22,7 @@ public class GridGenerator : MonoBehaviour
     public PathNode[,] grid;
     public List<PathNode> FinalPath;
 
-    public bool calculatePath = true;
-    public bool gridGenerating = false;
-    public bool pathGenerating = false;
-    public bool deleting = false;
+    public MapState mapState;
 
     public int groundCost = 1;
     public int rockCost = 5;
@@ -38,15 +31,21 @@ public class GridGenerator : MonoBehaviour
     public Vector2Int startCoords;
     public Vector2Int endCoords;
 
+    void Awake()
+    {
+        pathGen = GetComponent<PathfindingGenerator>();
+    }
+
     // Start is called before the first frame update
     void Start()
     {
+        mapState = MapState.IDLE;
         StartCoroutine(CreateGrid());
     }
 
     public IEnumerator CreateGrid()
     {
-        gridGenerating = true;
+        mapState = MapState.CREATING_GRID;
         grid = new PathNode[zSize, xSize];
         //seed = UnityEngine.Random.Range(0f, 0.2f);
         seed = UnityEngine.Random.Range(0f, 1f);
@@ -121,7 +120,7 @@ public class GridGenerator : MonoBehaviour
 
         grid[startCoords.x, startCoords.y].obj.tag = "Start";
         grid[endCoords.x, endCoords.y].obj.tag = "End";
-        gridGenerating = false;
+        pathGen.FindPath();
         //yield return new WaitForSeconds(0.0001f);
 
     }
@@ -188,45 +187,10 @@ public class GridGenerator : MonoBehaviour
         return NeighboringNodes;
     }
 
-    public IEnumerator HighlightPath()
-    {
-        pathGenerating = true;
 
-        grid[startCoords.x, startCoords.y].obj.GetComponent<Renderer>().material.SetTexture("DiffuseTexture", startTexture);
-        grid[endCoords.x, endCoords.y].obj.GetComponent<Renderer>().material.SetTexture("DiffuseTexture", endTexture);
-        for (int i = 1; i < FinalPath.Count-1; i++)
-        {
-            // For outline Color/Texture etc you'll need to change these variable names in the SimpleOutlines pbr graph thingy properties settings
-            // https://i.imgur.com/SPO1IiJ.png
-
-            PathNode node = FinalPath[i];
-
-            if (grid[node.gridz, node.gridx].obj.transform.position.y == 0)
-            {
-                grid[node.gridz, node.gridx].obj.GetComponent<Renderer>().material.SetTexture("DiffuseTexture", bridgeTexture);
-                node.nodeType = NodeTypes.PATH_BRIDGE;
-            }
-            else if (grid[node.gridz, node.gridx].obj.transform.position.y == 1f)
-            {
-                grid[node.gridz, node.gridx].obj.GetComponent<Renderer>().material.SetTexture("DiffuseTexture", rockRoadTexture);
-                grid[node.gridz, node.gridx].obj.transform.position = grid[node.gridz, node.gridx].obj.transform.position - new Vector3(0, 0.25f, 0);
-                node.nodeType = NodeTypes.PATH_TUNNEL;
-            }
-            else
-            {
-                grid[node.gridz, node.gridx].obj.GetComponent<Renderer>().material.SetTexture("DiffuseTexture", pathTexture);
-                grid[node.gridz, node.gridx].obj.transform.position = grid[node.gridz, node.gridx].obj.transform.position - new Vector3(0, 0.25f, 0);
-                node.nodeType = NodeTypes.PATH;
-                // In case outline colour needs to be changed
-                //grid[node.gridz, node.gridx].obj.GetComponent<Renderer>().material.SetColor("OutlineColor", new Color(242f / 255f, 166f / 255f, 94f / 255f, 1));
-            }
-            yield return new WaitForSeconds(0.0001f);
-        }
-        pathGenerating = false;
-        GenerateTrees();
-    }
 
     public void GenerateTrees() {
+        mapState = MapState.POPULTING_MAP;
         if (xSize < 3 || zSize < 3 )
         {
             return;
@@ -253,13 +217,13 @@ public class GridGenerator : MonoBehaviour
                 }
             }
         }
+        mapState = MapState.IDLE;
     }
 
     public void DeleteGrid()
     {
-        if (null != grid && !calculatePath && !gridGenerating && !pathGenerating && !deleting)
+        if (null != grid && mapState == MapState.IDLE)
         {
-            deleting = true;
             for (int z = 0; z < zSize; z++)
             {
                 for (int x = 0; x < xSize; x++)
@@ -269,24 +233,23 @@ public class GridGenerator : MonoBehaviour
             }
 
             grid = null;
-            deleting = false;
-            calculatePath = true;
-        }
 
-        while (GameObject.Find("Grid Generator").transform.childCount != 0)
-        {
-            DestroyImmediate(GameObject.Find("Grid Generator").transform.GetChild(0).gameObject);
+            while (GameObject.Find("Grid Generator").transform.childCount != 0)
+            {
+                DestroyImmediate(GameObject.Find("Grid Generator").transform.GetChild(0).gameObject);
+            }
         }
     }
 
     // Might want to add something here to prevent it from being called twice
     public void RegenerateGrid()
     {
-        if (!gridGenerating && !pathGenerating && !deleting)
+        if (mapState == MapState.IDLE)
         {
             DeleteGrid();
             StartCoroutine(CreateGrid());
         }
+
     }
 
     // Update is called once per frame

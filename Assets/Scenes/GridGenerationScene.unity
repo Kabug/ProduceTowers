@@ -166,6 +166,7 @@ MonoBehaviour:
   zSize: 20
   C: 1000
   scale: 0.25
+  mapState: 0
   calculatePath: 1
   gridGenerating: 1
   pathGenerating: 0
@@ -201,6 +202,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53d451a7d4b85834aa1c8b527987c60e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  pathTexture: {fileID: 2800000, guid: 8268af2b01baed04c83e811f64db5c19, type: 3}
+  bridgeTexture: {fileID: 2800000, guid: c461008aff8aefc40b17da528751b5a1, type: 3}
+  rockRoadTexture: {fileID: 2800000, guid: 2a113f09f4d801844a055afdf11f28f3, type: 3}
+  startTexture: {fileID: 2800000, guid: 3ca2711d9e7656045b680b22a949c310, type: 3}
+  endTexture: {fileID: 2800000, guid: 885582fccb309504ca6be5f794c01838, type: 3}
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
