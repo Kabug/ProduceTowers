@@ -156,6 +156,7 @@ MonoBehaviour:
   blockPrefab: {fileID: 7929542369543168120, guid: 4386e8d5233371c4ca8f2cdc7f6f7977, type: 3}
   waterPrefab: {fileID: 8736564887131478348, guid: ff316b101cdf14e4fad6e104dcd57c2e, type: 3}
   rockPrefab: {fileID: 8736564887131478348, guid: 9706c9ea94dc7e440be4eb72fa75537c, type: 3}
+  treePrefab: {fileID: 315445041080734672, guid: ddc246ced2d2aa446a6c585ec68ef35b, type: 3}
   pathTexture: {fileID: 2800000, guid: 8268af2b01baed04c83e811f64db5c19, type: 3}
   bridgeTexture: {fileID: 2800000, guid: c461008aff8aefc40b17da528751b5a1, type: 3}
   rockRoadTexture: {fileID: 2800000, guid: 2a113f09f4d801844a055afdf11f28f3, type: 3}
@@ -200,8 +201,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53d451a7d4b85834aa1c8b527987c60e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  start: {fileID: 0}
-  end: {fileID: 0}
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0

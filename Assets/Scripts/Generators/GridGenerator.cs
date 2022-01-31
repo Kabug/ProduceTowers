@@ -8,6 +8,7 @@ public class GridGenerator : MonoBehaviour
     public GameObject blockPrefab;
     public GameObject waterPrefab;
     public GameObject rockPrefab;
+    public GameObject treePrefab;
 
     public Texture pathTexture;
     public Texture bridgeTexture;
@@ -21,8 +22,6 @@ public class GridGenerator : MonoBehaviour
     private float seed;
     public int C = 10;
     public float scale = 0.5f;
-    //private List<List<GameObject>> mapObjectList = new List<List<GameObject>>();
-
 
     public PathNode[,] grid;
     public List<PathNode> FinalPath;
@@ -49,16 +48,13 @@ public class GridGenerator : MonoBehaviour
     {
         gridGenerating = true;
         grid = new PathNode[zSize, xSize];
-        //Instantiate(blockPrefab, new Vector3(1, 1, 1), Quaternion.identity);
         //seed = UnityEngine.Random.Range(0f, 0.2f);
         seed = UnityEngine.Random.Range(0f, 1f);
         List<Vector2Int> possibleStartPos = new List<Vector2Int>();
         for (int z = 0; z < zSize; z++)
         {
-            //mapObjectList.Add(new List<GameObject>());
             for (int x = 0; x < xSize; x++)
             {
-                //float y = (float)Math.Round(Mathf.PerlinNoise(x * (0.25f + seed), z * (0.25f + seed)) * 2.5f, MidpointRounding.AwayFromZero) / 2;
                 float y = Mathf.PerlinNoise((x + seed * C) * scale, (z * + seed * C) * scale);
                 if (y >= 0.65f)
                 {
@@ -72,7 +68,6 @@ public class GridGenerator : MonoBehaviour
                 {
                     y = 0.5f;
                 }
-                //Debug.Log(new Vector3(x, y, z));
                 // Makes it more costly to travel through the center of the map
                 //int middlecost = (int)(Mathf.Pow(2, 2 / Mathf.Clamp(Mathf.Abs((z) - (x)), 1, 100)) + UnityEngine.Random.Range(1, 5));
                 int middlecost = (int)(Mathf.Pow(2, 1 / Mathf.Clamp(Mathf.Abs((z) - (x)), 1, 100)) + UnityEngine.Random.Range(1, 5));
@@ -80,24 +75,22 @@ public class GridGenerator : MonoBehaviour
                 if (0.5 == y)
                 {
                     var groundObject = Instantiate(blockPrefab, new Vector3(x, y, z), Quaternion.identity);
-                    //mapObjectList[z].Add(groundObject);
                     groundObject.transform.parent = GameObject.Find("Grid Generator").transform;
-                    grid[z, x] = new PathNode(new Vector3(x, y, z), x, z, groundCost + middlecost, groundObject);
+                    grid[z, x] = new PathNode(new Vector3(x, y, z), x, z, groundCost + middlecost, groundObject, NodeTypes.GROUND);
                 }
                 else if (1 == y)
                 {
                     var rockObject = Instantiate(rockPrefab, new Vector3(x, y, z), Quaternion.identity);
-                    //mapObjectList[z].Add(rockObject);
                     rockObject.transform.parent = GameObject.Find("Grid Generator").transform;
-                    grid[z, x] = new PathNode(new Vector3(x, y, z), x, z, rockCost + middlecost, rockObject);
+                    grid[z, x] = new PathNode(new Vector3(x, y, z), x, z, rockCost + middlecost, rockObject, NodeTypes.ROCK);
                 }
                 else if (0 == y)
                 {
                     var waterObject = Instantiate(waterPrefab, new Vector3(x, y, z), Quaternion.identity);
-                    //mapObjectList[z].Add(waterObject);
                     waterObject.transform.parent = GameObject.Find("Grid Generator").transform;
-                    grid[z, x] = new PathNode(new Vector3(x, y, z), x, z, waterCost + middlecost, waterObject);
+                    grid[z, x] = new PathNode(new Vector3(x, y, z), x, z, waterCost + middlecost, waterObject, NodeTypes.WATER);
                 }
+            
                 if ( x == 0 || z == 0 || x == xSize - 1 || z == zSize - 1)
                 {
                     possibleStartPos.Add(new Vector2Int(x,z));
@@ -130,6 +123,7 @@ public class GridGenerator : MonoBehaviour
         grid[endCoords.x, endCoords.y].obj.tag = "End";
         gridGenerating = false;
         //yield return new WaitForSeconds(0.0001f);
+
     }
 
     int GetManhattenDistance(Vector2Int StartPos, Vector2Int EndPos)
@@ -210,22 +204,55 @@ public class GridGenerator : MonoBehaviour
             if (grid[node.gridz, node.gridx].obj.transform.position.y == 0)
             {
                 grid[node.gridz, node.gridx].obj.GetComponent<Renderer>().material.SetTexture("DiffuseTexture", bridgeTexture);
+                node.nodeType = NodeTypes.PATH_BRIDGE;
             }
             else if (grid[node.gridz, node.gridx].obj.transform.position.y == 1f)
             {
                 grid[node.gridz, node.gridx].obj.GetComponent<Renderer>().material.SetTexture("DiffuseTexture", rockRoadTexture);
                 grid[node.gridz, node.gridx].obj.transform.position = grid[node.gridz, node.gridx].obj.transform.position - new Vector3(0, 0.25f, 0);
+                node.nodeType = NodeTypes.PATH_TUNNEL;
             }
             else
             {
                 grid[node.gridz, node.gridx].obj.GetComponent<Renderer>().material.SetTexture("DiffuseTexture", pathTexture);
                 grid[node.gridz, node.gridx].obj.transform.position = grid[node.gridz, node.gridx].obj.transform.position - new Vector3(0, 0.25f, 0);
+                node.nodeType = NodeTypes.PATH;
                 // In case outline colour needs to be changed
                 //grid[node.gridz, node.gridx].obj.GetComponent<Renderer>().material.SetColor("OutlineColor", new Color(242f / 255f, 166f / 255f, 94f / 255f, 1));
             }
             yield return new WaitForSeconds(0.0001f);
         }
         pathGenerating = false;
+        GenerateTrees();
+    }
+
+    public void GenerateTrees() {
+        if (xSize < 3 || zSize < 3 )
+        {
+            return;
+        }
+
+        for (int x = 1; x < xSize - 1; x++)
+        {
+            for (int z = 1; z < zSize - 1; z++)
+            {
+                if (grid[z - 1, x + 1].nodeType == NodeTypes.GROUND
+                    && grid[z, x + 1].nodeType == NodeTypes.GROUND
+                    && grid[z + 1, x + 1].nodeType == NodeTypes.GROUND
+                    && grid[z - 1, x].nodeType == NodeTypes.GROUND
+                    && grid[z, x].nodeType == NodeTypes.GROUND
+                    && grid[z + 1, x].nodeType == NodeTypes.GROUND
+                    && grid[z - 1, x - 1].nodeType == NodeTypes.GROUND
+                    && grid[z, x - 1].nodeType == NodeTypes.GROUND
+                    && grid[z + 1, x - 1].nodeType == NodeTypes.GROUND
+                    && UnityEngine.Random.Range(0f, 1f) > 0.25f
+                    )
+                {
+                    var treeObject = Instantiate(treePrefab, new Vector3(x, 1, z), Quaternion.identity);
+                    treeObject.transform.parent = GameObject.Find("Grid Generator").transform;
+                }
+            }
+        }
     }
 
     public void DeleteGrid()
@@ -260,7 +287,6 @@ public class GridGenerator : MonoBehaviour
             DeleteGrid();
             StartCoroutine(CreateGrid());
         }
-
     }
 
     // Update is called once per frame
