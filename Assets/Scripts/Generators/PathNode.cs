@@ -11,7 +11,7 @@ public class PathNode
     public Vector3 position;
     public GameObject obj;
 
-    public NodeTypes nodeType; // ground = 1, rock = 2, water = 3. Remove later
+    public NodeTypes nodeType;
 
     public int gCost;
     public int hCost;
