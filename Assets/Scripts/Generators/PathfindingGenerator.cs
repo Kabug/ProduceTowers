@@ -125,7 +125,6 @@ public class PathfindingGenerator : MonoBehaviour
             }
             yield return new WaitForSeconds(0.0001f);
         }
-        grid.GenerateTrees();
     }
 
     int GetManhattenDistance(PathNode CurrentNode, PathNode NeighborNode)

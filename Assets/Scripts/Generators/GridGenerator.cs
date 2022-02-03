@@ -40,7 +40,16 @@ public class GridGenerator : MonoBehaviour
     void Start()
     {
         mapState = MapState.IDLE;
-        StartCoroutine(CreateGrid());
+        StartCoroutine(CreateMap());
+    }
+
+    IEnumerator CreateMap()
+    {
+        yield return StartCoroutine(CreateGrid());
+        pathGen.FindPath();
+        GenerateTrees();
+        mapState = MapState.IDLE;
+        print("done");
     }
 
     public IEnumerator CreateGrid()
@@ -120,7 +129,6 @@ public class GridGenerator : MonoBehaviour
 
         grid[startCoords.x, startCoords.y].obj.tag = "Start";
         grid[endCoords.x, endCoords.y].obj.tag = "End";
-        pathGen.FindPath();
         //yield return new WaitForSeconds(0.0001f);
 
     }
@@ -217,7 +225,6 @@ public class GridGenerator : MonoBehaviour
                 }
             }
         }
-        mapState = MapState.IDLE;
     }
 
     public void DeleteGrid()
@@ -247,7 +254,7 @@ public class GridGenerator : MonoBehaviour
         if (mapState == MapState.IDLE)
         {
             DeleteGrid();
-            StartCoroutine(CreateGrid());
+            StartCoroutine(CreateMap());
         }
 
     }
