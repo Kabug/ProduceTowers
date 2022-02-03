@@ -100,7 +100,7 @@ public class GridGenerator : MonoBehaviour
             
                 if ( x == 0 || z == 0 || x == xSize - 1 || z == zSize - 1)
                 {
-                    possibleStartPos.Add(new Vector2Int(x,z));
+                    possibleStartPos.Add(new Vector2Int(z,x));
                 }
             }
             if (z % 2 == 0)
@@ -125,7 +125,8 @@ public class GridGenerator : MonoBehaviour
 
         randomIndex = UnityEngine.Random.Range(0, possibleEndPos.Count - 1);
         endCoords = possibleEndPos[randomIndex];
-
+        print(startCoords);
+        print(endCoords);
         grid[startCoords.x, startCoords.y].obj.tag = "Start";
         grid[endCoords.x, endCoords.y].obj.tag = "End";
         //yield return new WaitForSeconds(0.0001f);
@@ -233,9 +234,9 @@ public class GridGenerator : MonoBehaviour
     {
         if (null != grid && mapState == MapState.IDLE)
         {
-            for (int z = 0; z < zSize; z++)
+            for (int z = 0; z < grid.GetLength(0); z++)
             {
-                for (int x = 0; x < xSize; x++)
+                for (int x = 0; x < grid.GetLength(1); x++)
                 {
                     Destroy(grid[z, x].obj);
                 }
