@@ -8,5 +8,6 @@ public enum MapState
     CREATING_PATH,
     POPULTING_MAP,
     DELETING,
-    IDLE
+    IDLE,
+    ERROR
 }

@@ -43,16 +43,15 @@ public class GridGenerator : MonoBehaviour
         StartCoroutine(CreateMap());
     }
 
-    IEnumerator CreateMap()
+    public IEnumerator CreateMap()
     {
         yield return StartCoroutine(CreateGrid());
         pathGen.FindPath();
-        GenerateTrees();
+        yield return StartCoroutine(GenerateTrees());
         mapState = MapState.IDLE;
-        print("done");
     }
 
-    public IEnumerator CreateGrid()
+    IEnumerator CreateGrid()
     {
         mapState = MapState.CREATING_GRID;
         grid = new PathNode[zSize, xSize];
@@ -197,34 +196,39 @@ public class GridGenerator : MonoBehaviour
 
 
 
-    public void GenerateTrees() {
+    IEnumerator GenerateTrees() {
         mapState = MapState.POPULTING_MAP;
-        if (xSize < 3 || zSize < 3 )
-        {
-            return;
-        }
 
-        for (int x = 1; x < xSize - 1; x++)
+        if (xSize > 3 && zSize > 3)
         {
-            for (int z = 1; z < zSize - 1; z++)
+            for (int x = 1; x < xSize - 1; x++)
             {
-                if (grid[z - 1, x + 1].nodeType == NodeTypes.GROUND
-                    && grid[z, x + 1].nodeType == NodeTypes.GROUND
-                    && grid[z + 1, x + 1].nodeType == NodeTypes.GROUND
-                    && grid[z - 1, x].nodeType == NodeTypes.GROUND
-                    && grid[z, x].nodeType == NodeTypes.GROUND
-                    && grid[z + 1, x].nodeType == NodeTypes.GROUND
-                    && grid[z - 1, x - 1].nodeType == NodeTypes.GROUND
-                    && grid[z, x - 1].nodeType == NodeTypes.GROUND
-                    && grid[z + 1, x - 1].nodeType == NodeTypes.GROUND
-                    && UnityEngine.Random.Range(0f, 1f) > 0.25f
-                    )
+                for (int z = 1; z < zSize - 1; z++)
                 {
-                    var treeObject = Instantiate(treePrefab, new Vector3(x, 1, z), Quaternion.identity);
-                    treeObject.transform.parent = GameObject.Find("Grid Generator").transform;
+                    if (grid[z - 1, x + 1].nodeType == NodeTypes.GROUND
+                        && grid[z, x + 1].nodeType == NodeTypes.GROUND
+                        && grid[z + 1, x + 1].nodeType == NodeTypes.GROUND
+                        && grid[z - 1, x].nodeType == NodeTypes.GROUND
+                        && grid[z, x].nodeType == NodeTypes.GROUND
+                        && grid[z + 1, x].nodeType == NodeTypes.GROUND
+                        && grid[z - 1, x - 1].nodeType == NodeTypes.GROUND
+                        && grid[z, x - 1].nodeType == NodeTypes.GROUND
+                        && grid[z + 1, x - 1].nodeType == NodeTypes.GROUND
+                        && UnityEngine.Random.Range(0f, 1f) > 0.25f
+                        )
+                    {
+                        var treeObject = Instantiate(treePrefab, new Vector3(x, 1, z), Quaternion.identity);
+                        treeObject.transform.parent = GameObject.Find("Grid Generator").transform;
+                    }
                 }
+                yield return new WaitForSeconds(0.0001f);
             }
         }
+        else
+        {
+            mapState = MapState.ERROR;
+        }
+
     }
 
     public void DeleteGrid()
