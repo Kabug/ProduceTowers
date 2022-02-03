@@ -15,6 +15,8 @@ public class PathfindingGenerator : MonoBehaviour
     public Texture startTexture;
     public Texture endTexture;
 
+    List<PathNode> finalPath;
+
     void Awake()
     {
         grid = GetComponent<GridGenerator>();
@@ -25,7 +27,7 @@ public class PathfindingGenerator : MonoBehaviour
 
     }
 
-    public void FindPath()
+    public IEnumerator FindPath()
     {
         grid.mapState = MapState.CREATING_PATH;
         startNode = grid.grid[grid.startCoords.x, grid.startCoords.y];
@@ -52,6 +54,7 @@ public class PathfindingGenerator : MonoBehaviour
             if (CurrentNode == endNode)
             {
                 GetFinalPath(startNode, endNode);
+                yield return StartCoroutine(HighlightPath(finalPath));
             }
 
             foreach (PathNode NeighborNode in grid.GetNeighboringNodes(CurrentNode))
@@ -75,22 +78,22 @@ public class PathfindingGenerator : MonoBehaviour
                 }
             }
         }
+        yield return new WaitForSeconds(0.0001f);
     }
 
     void GetFinalPath(PathNode startNode, PathNode endNode)
     {
-        List<PathNode> FinalPath = new List<PathNode>();
-        PathNode CurrentNode = endNode;
+        finalPath = new List<PathNode>();
+        PathNode currentNode = endNode;
 
-        while(CurrentNode != startNode)
+        while(currentNode != startNode)
         {
-            FinalPath.Add(CurrentNode);
-            CurrentNode = CurrentNode.parent;
+            finalPath.Add(currentNode);
+            currentNode = currentNode.parent;
         }
-        FinalPath.Add(startNode);
-        FinalPath.Reverse();
-        grid.FinalPath = FinalPath;
-        StartCoroutine(HighlightPath(FinalPath));
+        finalPath.Add(startNode);
+        finalPath.Reverse();
+
     }
 
     public IEnumerator HighlightPath(List<PathNode> FinalPath)

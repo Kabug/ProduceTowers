@@ -17,7 +17,7 @@ public class GridGenerator : MonoBehaviour
 
     private float seed;
     public int C = 10;
-    public float scale = 0.5f;
+    public float scale = 0.2f;
 
     public PathNode[,] grid;
     public List<PathNode> FinalPath;
@@ -46,7 +46,7 @@ public class GridGenerator : MonoBehaviour
     public IEnumerator CreateMap()
     {
         yield return StartCoroutine(CreateGrid());
-        pathGen.FindPath();
+        yield return StartCoroutine(pathGen.FindPath());
         yield return StartCoroutine(GenerateTrees());
         mapState = MapState.IDLE;
     }
@@ -193,8 +193,6 @@ public class GridGenerator : MonoBehaviour
 
         return NeighboringNodes;
     }
-
-
 
     IEnumerator GenerateTrees() {
         mapState = MapState.POPULTING_MAP;
