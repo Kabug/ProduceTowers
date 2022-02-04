@@ -125,8 +125,6 @@ public class GridGenerator : MonoBehaviour
 
         randomIndex = UnityEngine.Random.Range(0, possibleEndPos.Count - 1);
         endCoords = possibleEndPos[randomIndex];
-        print(startCoords);
-        print(endCoords);
         grid[startCoords.x, startCoords.y].obj.tag = "Start";
         grid[endCoords.x, endCoords.y].obj.tag = "End";
         //yield return new WaitForSeconds(0.0001f);
