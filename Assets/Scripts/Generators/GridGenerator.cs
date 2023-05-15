@@ -26,6 +26,7 @@ public class GridGenerator : MonoBehaviour
     public PathNode[,] grid;
     public List<PathNode> FinalPath;
 
+    // Should make this an enum state
     public bool calculatePath = true;
     public bool gridGenerating = false;
     public bool pathGenerating = false;
@@ -49,51 +50,31 @@ public class GridGenerator : MonoBehaviour
         gridGenerating = true;
         grid = new PathNode[zSize, xSize];
         //seed = UnityEngine.Random.Range(0f, 0.2f);
+        // We can eventually convert this into converting text into a number between 0 and 1 for easier to remember and reproducible seeds
         seed = UnityEngine.Random.Range(0f, 1f);
         List<Vector2Int> possibleStartPos = new List<Vector2Int>();
         for (int z = 0; z < zSize; z++)
         {
             for (int x = 0; x < xSize; x++)
             {
-                float y = Mathf.PerlinNoise((x + seed * C) * scale, (z * + seed * C) * scale);
+                float y = Mathf.PerlinNoise((x + seed * C) * scale, (z * +seed * C) * scale);
+                int middlecost = (int)(Mathf.Pow(2, 1 / Mathf.Clamp(Mathf.Abs((z) - (x)), 1, 100)) + UnityEngine.Random.Range(1, 5));
                 if (y >= 0.65f)
                 {
-                    y = 1;
+                    GenerateNode(x, z, 1f, middlecost);
                 }
                 else if (y <= 0.2f)
                 {
-                    y = 0;
+                    GenerateNode(x, z, 0f, middlecost);
                 }
                 else
                 {
-                    y = 0.5f;
+                    GenerateNode(x, z, 0.5f, middlecost);
                 }
-                // Makes it more costly to travel through the center of the map
-                //int middlecost = (int)(Mathf.Pow(2, 2 / Mathf.Clamp(Mathf.Abs((z) - (x)), 1, 100)) + UnityEngine.Random.Range(1, 5));
-                int middlecost = (int)(Mathf.Pow(2, 1 / Mathf.Clamp(Mathf.Abs((z) - (x)), 1, 100)) + UnityEngine.Random.Range(1, 5));
-                //int middlecost = 0;
-                if (0.5 == y)
+
+                if (x == 0 || z == 0 || x == xSize - 1 || z == zSize - 1)
                 {
-                    var groundObject = Instantiate(blockPrefab, new Vector3(x, y, z), Quaternion.identity);
-                    groundObject.transform.parent = GameObject.Find("Grid Generator").transform;
-                    grid[z, x] = new PathNode(new Vector3(x, y, z), x, z, groundCost + middlecost, groundObject, NodeTypes.GROUND);
-                }
-                else if (1 == y)
-                {
-                    var rockObject = Instantiate(rockPrefab, new Vector3(x, y, z), Quaternion.identity);
-                    rockObject.transform.parent = GameObject.Find("Grid Generator").transform;
-                    grid[z, x] = new PathNode(new Vector3(x, y, z), x, z, rockCost + middlecost, rockObject, NodeTypes.ROCK);
-                }
-                else if (0 == y)
-                {
-                    var waterObject = Instantiate(waterPrefab, new Vector3(x, y, z), Quaternion.identity);
-                    waterObject.transform.parent = GameObject.Find("Grid Generator").transform;
-                    grid[z, x] = new PathNode(new Vector3(x, y, z), x, z, waterCost + middlecost, waterObject, NodeTypes.WATER);
-                }
-            
-                if ( x == 0 || z == 0 || x == xSize - 1 || z == zSize - 1)
-                {
-                    possibleStartPos.Add(new Vector2Int(x,z));
+                    possibleStartPos.Add(new Vector2Int(x, z));
                 }
             }
             if (z % 2 == 0)
@@ -123,8 +104,38 @@ public class GridGenerator : MonoBehaviour
         grid[endCoords.x, endCoords.y].obj.tag = "End";
         gridGenerating = false;
         //yield return new WaitForSeconds(0.0001f);
-
     }
+
+    private void GenerateNode(int x, int z, float y, int middlecost)
+    {
+        GameObject prefab;
+        int cost;
+        NodeTypes type;
+
+        if (y == 0)
+        {
+            prefab = waterPrefab;
+            cost = waterCost;
+            type = NodeTypes.WATER;
+        }
+        else if (y == 1)
+        {
+            prefab = rockPrefab;
+            cost = rockCost;
+            type = NodeTypes.ROCK;
+        }
+        else
+        {
+            prefab = blockPrefab;
+            cost = groundCost;
+            type = NodeTypes.GROUND;
+        }
+
+        var nodeObject = Instantiate(prefab, new Vector3(x, y, z), Quaternion.identity);
+        nodeObject.transform.parent = transform;
+        grid[z, x] = new PathNode(new Vector3(x, y, z), x, z, cost + middlecost, nodeObject, type);
+    }
+
 
     int GetManhattenDistance(Vector2Int StartPos, Vector2Int EndPos)
     {
@@ -226,27 +237,30 @@ public class GridGenerator : MonoBehaviour
         StartCoroutine(GenerateTrees());
     }
 
-    public IEnumerator GenerateTrees() {
-        if (xSize > 3 || zSize > 3 )
+    public bool IsValidTreeSpot(int z, int x)
+    {
+        return grid[z - 1, x + 1].nodeType == NodeTypes.GROUND
+            && grid[z, x + 1].nodeType == NodeTypes.GROUND
+            && grid[z + 1, x + 1].nodeType == NodeTypes.GROUND
+            && grid[z - 1, x].nodeType == NodeTypes.GROUND
+            && grid[z, x].nodeType == NodeTypes.GROUND
+            && grid[z + 1, x].nodeType == NodeTypes.GROUND
+            && grid[z - 1, x - 1].nodeType == NodeTypes.GROUND
+            && grid[z, x - 1].nodeType == NodeTypes.GROUND
+            && grid[z + 1, x - 1].nodeType == NodeTypes.GROUND;
+    }
+    public IEnumerator GenerateTrees()
+    {
+        if (xSize > 3 || zSize > 3)
         {
             for (int x = 1; x < xSize - 1; x++)
             {
                 for (int z = 1; z < zSize - 1; z++)
                 {
-                    if (grid[z - 1, x + 1].nodeType == NodeTypes.GROUND
-                        && grid[z, x + 1].nodeType == NodeTypes.GROUND
-                        && grid[z + 1, x + 1].nodeType == NodeTypes.GROUND
-                        && grid[z - 1, x].nodeType == NodeTypes.GROUND
-                        && grid[z, x].nodeType == NodeTypes.GROUND
-                        && grid[z + 1, x].nodeType == NodeTypes.GROUND
-                        && grid[z - 1, x - 1].nodeType == NodeTypes.GROUND
-                        && grid[z, x - 1].nodeType == NodeTypes.GROUND
-                        && grid[z + 1, x - 1].nodeType == NodeTypes.GROUND
-                        && UnityEngine.Random.Range(0f, 1f) > 0.25f
-                        )
+                    if (IsValidTreeSpot(z, x) && UnityEngine.Random.Range(0f, 1f) > 0.25f)
                     {
                         var treeObject = Instantiate(treePrefab, new Vector3(x, 1, z), Quaternion.identity);
-                        treeObject.transform.parent = GameObject.Find("Grid Generator").transform;
+                        treeObject.transform.parent = transform;
                         yield return new WaitForSeconds(0.0001f);
                     }
                 }
@@ -259,22 +273,18 @@ public class GridGenerator : MonoBehaviour
         if (null != grid && !calculatePath && !gridGenerating && !pathGenerating && !deleting)
         {
             deleting = true;
-            for (int z = 0; z < zSize; z++)
+            foreach (var node in grid)
             {
-                for (int x = 0; x < xSize; x++)
-                {
-                    Destroy(grid[z, x].obj);
-                }
+                Destroy(node.obj);
             }
-
             grid = null;
             deleting = false;
             calculatePath = true;
         }
 
-        while (GameObject.Find("Grid Generator").transform.childCount != 0)
+        while (transform.childCount != 0)
         {
-            DestroyImmediate(GameObject.Find("Grid Generator").transform.GetChild(0).gameObject);
+            DestroyImmediate(transform.GetChild(0).gameObject);
         }
     }
 
