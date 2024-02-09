@@ -5,30 +5,32 @@ using UnityEngine;
 public class PathfindingGenerator : MonoBehaviour
 {
 
-    GridGenerator grid;
-    public PathNode startNode;
-    public PathNode endNode;
-    
-    void Awake()
-    {
-        grid = GetComponent<GridGenerator>();
-    }
+    public static PathfindingGenerator Instance { get; private set; }
 
-    void Update()
+    private void Awake()
     {
-        if (GameObject.FindGameObjectWithTag("Start") && GameObject.FindGameObjectWithTag("End") && grid.calculatePath && !grid.gridGenerating && !grid.pathGenerating)
+        // Ensure there is only one instance of PathfindingGenrator
+        if (Instance == null)
         {
-            startNode = grid.grid[grid.startCoords.x, grid.startCoords.y];
-            endNode = grid.grid[grid.endCoords.x, grid.endCoords.y];
-            FindPath();
-            grid.calculatePath = false;
+            // Set the static instance property to this instance
+            Instance = this;
         }
+        else
+        {
+            // If an instance already exists, destroy this instance
+            Destroy(gameObject);
+            return;
+        }
+
+        // Ensure the singleton persists across scenes
+        DontDestroyOnLoad(gameObject);
     }
 
-    void FindPath()
+    public List<PathNode> FindPath(List<List<PathNode>> grid, PathNode startNode, PathNode endNode)
     {
         List<PathNode> OpenList = new List<PathNode>();
         HashSet<PathNode> ClosedList = new HashSet<PathNode>();
+        List<PathNode> FinalPath = new List<PathNode>();
 
         OpenList.Add(startNode);
 
@@ -48,10 +50,10 @@ public class PathfindingGenerator : MonoBehaviour
 
             if (CurrentNode == endNode)
             {
-                GetFinalPath(startNode, endNode);
+                FinalPath = GetFinalPath(startNode, endNode);
             }
 
-            foreach (PathNode NeighborNode in grid.GetNeighboringNodes(CurrentNode))
+            foreach (PathNode NeighborNode in GetNeighboringNodes(CurrentNode, grid))
             {
                 if (ClosedList.Contains(NeighborNode))
                 {
@@ -74,22 +76,84 @@ public class PathfindingGenerator : MonoBehaviour
                 //grid.UnhighlightSpot(NeighborNode);
             }
         }
+
+        return FinalPath;
     }
 
-    void GetFinalPath(PathNode startNode, PathNode endNode)
+    public List<PathNode> GetNeighboringNodes(PathNode CurrentNode, List<List<PathNode>> grid)
+    {
+        List<PathNode> NeighboringNodes = new List<PathNode>();
+
+        int xCheck;
+        int zCheck;
+
+        // Get the z size (number of rows)
+        int zSize = grid.Count;
+
+        // Get the x size (number of columns)
+        int xSize = grid.Count > 0 ? grid[0].Count : 0;
+
+        //Right Side
+        xCheck = CurrentNode.gridx + 1;
+        zCheck = CurrentNode.gridz;
+        if (xCheck >= 0 && xCheck < xSize)
+        {
+            if (zCheck >= 0 && zCheck < zSize)
+            {
+                NeighboringNodes.Add(grid[zCheck][xCheck]);
+            }
+        }
+
+        //Left Side
+        xCheck = CurrentNode.gridx - 1;
+        zCheck = CurrentNode.gridz;
+        if (xCheck >= 0 && xCheck < xSize)
+        {
+            if (zCheck >= 0 && zCheck < zSize)
+            {
+                NeighboringNodes.Add(grid[zCheck][xCheck]);
+            }
+        }
+
+        //Top Side
+        xCheck = CurrentNode.gridx;
+        zCheck = CurrentNode.gridz + 1;
+        if (xCheck >= 0 && xCheck < xSize)
+        {
+            if (zCheck >= 0 && zCheck < zSize)
+            {
+                NeighboringNodes.Add(grid[zCheck][xCheck]);
+            }
+        }
+
+        //Bottom Side
+        xCheck = CurrentNode.gridx;
+        zCheck = CurrentNode.gridz - 1;
+        if (xCheck >= 0 && xCheck < xSize)
+        {
+            if (zCheck >= 0 && zCheck < zSize)
+            {
+                NeighboringNodes.Add(grid[zCheck][xCheck]);
+            }
+        }
+
+        return NeighboringNodes;
+    }
+
+    List<PathNode> GetFinalPath(PathNode startNode, PathNode endNode)
     {
         List<PathNode> FinalPath = new List<PathNode>();
         PathNode CurrentNode = endNode;
 
-        while(CurrentNode != startNode)
+        while (CurrentNode != startNode)
         {
             FinalPath.Add(CurrentNode);
             CurrentNode = CurrentNode.parent;
         }
         FinalPath.Add(startNode);
         FinalPath.Reverse();
-        grid.FinalPath = FinalPath;
-        StartCoroutine(grid.HighlightPath());
+        return FinalPath;
+        
     }
 
     int GetManhattenDistance(PathNode CurrentNode, PathNode NeighborNode)

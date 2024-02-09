@@ -162,8 +162,8 @@ MonoBehaviour:
   rockRoadTexture: {fileID: 2800000, guid: 2a113f09f4d801844a055afdf11f28f3, type: 3}
   startTexture: {fileID: 2800000, guid: 3ca2711d9e7656045b680b22a949c310, type: 3}
   endTexture: {fileID: 2800000, guid: 885582fccb309504ca6be5f794c01838, type: 3}
-  xSize: 20
-  zSize: 20
+  xSize: 9
+  zSize: 9
   C: 1000
   scale: 0.25
   calculatePath: 1

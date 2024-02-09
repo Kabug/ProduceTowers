@@ -18,5 +18,10 @@ public class GridGeneratorEditor : Editor
         {
             gridGen.DeleteGrid();
         }
+
+        if (GUILayout.Button("Expand North"))
+        {
+            gridGen.ExpandNorth();
+        }
     }
 }
